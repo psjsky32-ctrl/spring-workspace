@@ -48,13 +48,15 @@ public class HelloSpringConfiguration implements
 
 	@Autowired
 	private MembersDao membersDao;
-
+	
+	// 비밀번호를 비교하는 도구를 등록한다.
 	// SecurityPasswordEncoder의 Bean을 생성한다.
 	@Bean // 메소드가 실행되어서 반환되는 객체를 Bean Container에 적재한다.
 	PasswordEncoder createPasswordEncoder() {
 		return new SecurityPasswordEncoder();
 	}
 
+	// DB에서 사용자 정보를 찾는 도구
 	// SecurityUserDetailsService의 Bean을 생성한다.
 	// @Bean으로 생성하는 객체(Bean)들은 필요한 의존 객체를 생성자로 주입해 주어야 한다.
 	@Bean
@@ -62,6 +64,7 @@ public class HelloSpringConfiguration implements
 		return new SecurityUserDetailsService(this.membersDao);
 	}
 
+	// 아이디 비번 일치하는지 검사하는 도구
 	// UsernameAndPasswordAuthenticationProvider의 Bean을 생성한다.
 	@Bean
 	AuthenticationProvider createAuthenticationProvider() {
@@ -70,12 +73,13 @@ public class HelloSpringConfiguration implements
 
 		return new UsernameAndPasswordAuthenticationProvider(userDetailsService, passwordEncoder);
 	}
-	
+	//로그인 성공시 동작하는 도구
 	@Bean
 	AuthenticationSuccessHandler createLoginSuccessHandler() {
 		return new LoginSuccessHandler(this.membersDao);
 	}
 	
+	//실패시 동작하는 도구
 	@Bean
 	AuthenticationFailureHandler createLoginFailureHandler() {
 		return new LoginFailureHandler(this.membersDao);
@@ -86,10 +90,12 @@ public class HelloSpringConfiguration implements
 	// Spring Security의 기본 로그인 절차를 수정하는 작업.
 	@Bean
 	SecurityFilterChain configureFilterChain(HttpSecurity httpSecurity) {
-		
+		//사용자가 로그인된 상태를 이용해, 공격자가 사용자 몰래 위조된 요청을 서버에 보내는 공격.
 		// CSRF 수정, 댓글 등록 불가. (Invalid CSRF token found for  ...)
 		// CSRF를 체크하는 SecurityFilter(CsrfFilter)를 무효화.
-//		 httpSecurity.csrf(csrf -> csrf.disable());
+		//<sec:csrfInput/> 아이디 값과 함께 _csrf라는 이름의 토큰 값이 자동으로 넣어진다
+		//
+//		httpSecurity.csrf(csrf -> csrf.disable());
 		
 		// UsernamePasswordAuthenticationFilter 수정.
 		httpSecurity.formLogin(formLogin -> 
