@@ -1,0 +1,222 @@
+ <!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ktdsuniversity.edu.board.dao.BoardDao">
+    <!--int selectBoardCount();-->
+    <select id="selectBoardCount"
+            parameterType="com.ktdsuniversity.edu.board.vo.request.SearchListVO"
+            resultType="_int">      <!-- ppt83p -->
+         SELECT COUNT(ID)
+           FROM BOARD B
+          INNER JOIN MEMBERS M  
+             ON B.EMAIL = M.EMAIL
+          <if test='searchKeyword != null and searchKeyword != ""'>
+          <if test='searchType =="email"'>
+          WHERE M.EMAIL LIKE '%' || #{searchKeyword}|| '%'
+          </if>
+          <if test='searchType =="name"'>
+          WHERE M.NAME LIKE '%' || #{searchKeyword}|| '%'
+          </if>
+          <if test='searchType =="subject"'>
+          WHERE B.SUBJECT LIKE '%' || #{searchKeyword}|| '%'
+          </if>
+          <if test='searchType =="content"'>
+          WHERE B.CONTENT LIKE '%' || #{searchKeyword}|| '%'
+          </if>
+          <if test='searchType =="subject content"'>
+          WHERE B.SUBJECT LIKE '%' || #{searchKeyword}|| '%'
+             OR B.CONTENT LIKE '%' || #{searchKeyword}|| '%'
+          </if>
+          </if>
+    </select>
+    <!--List<BoardVO> selectBoardList(); 제네릭이 잇을때는 제네릭의 타입만 적어준다 -->
+    <select id="selectBoardList" 
+            parameterType="com.ktdsuniversity.edu.board.vo.request.SearchListVO"
+            resultMap="BoardVOMap">
+            SELECT *
+              FROM (SELECT S.*
+                         , ROWNUM AS RNUM
+                      FROM (SELECT B.ID
+		                         , B.SUBJECT 
+		                         , B.CONTENT
+		                         , B.VIEW_CNT 
+		                         , B.EMAIL
+		                         , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT   
+		                         , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT   
+		                         , B.FILE_NAME 
+		                         , B.ORIGIN_FILE_NAME 
+		                         , M.NAME
+		                         , M.REGIST_DATE
+                              FROM BOARD B
+                             INNER JOIN MEMBERS M
+                                ON B.EMAIL = M.EMAIL
+                             <if test='searchKeyword != null and searchKeyword != ""'>
+                             <if test='searchType =="email"'>
+                             WHERE M.EMAIL LIKE '%' || #{searchKeyword}|| '%'
+                             </if>
+                             <if test='searchType =="name"'>
+                             WHERE M.NAME LIKE '%' || #{searchKeyword}|| '%'
+                             </if>
+                             <if test='searchType =="subject"'>
+                             WHERE B.SUBJECT LIKE '%' || #{searchKeyword}|| '%'
+                             </if>
+                             <if test='searchType =="content"'>
+                             WHERE B.CONTENT LIKE '%' || #{searchKeyword}|| '%'
+                             </if>
+                             <if test='searchType =="subject+content"'>
+                             WHERE B.SUBJECT LIKE '%' || #{searchKeyword}|| '%'
+                                OR B.CONTENT LIKE '%' || #{searchKeyword}|| '%'
+                             </if>
+                             </if>
+                             ORDER BY ID DESC) S
+                     WHERE ROWNUM <![CDATA[<=]]> (#{pageNo} + 1) * #{listSize})
+             WHERE RNUM >= #{pageNo} * #{listSize} + 1
+            
+            
+            
+    </select>
+    <!-- 새롭게 만들어지는 게시글의 PK를 미리 생성해서 WriteVO의 id라는 변수에 할당한다. -->
+
+    
+    <insert id="insertNewBoard" 
+            parameterType="com.ktdsuniversity.edu.board.vo.request.WriteVO">
+            <selectKey order="BEFORE"
+                       resultType="string"
+                       keyProperty="id">
+            SELECT 'BO-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_BOARD_PK.NEXTVAL, 6, '0')
+              FROM DUAL
+            </selectKey>
+            INSERT INTO BOARD
+            (ID
+            , SUBJECT 
+            , CONTENT 
+            , EMAIL 
+            , VIEW_CNT 
+            , CRT_DT 
+            , MDFY_DT 
+            , FILE_NAME 
+            , ORIGIN_FILE_NAME
+            , FILE_GROUP_ID)
+            VALUES
+            (#{id}
+            , #{subject}
+            , #{content}
+            , #{email}
+            , 0 
+            , SYSDATE
+            , SYSDATE
+            , NULL
+            , NULL
+            , #{fileGroupId})
+    </insert>
+    <!-- result==> select 태그에만 사용가능 // 파라미터가 단일값 변수: _parameter-->
+    <!-- Join을 사용하는 쿼리의 결과를 Has A를 
+         사용하는 VO에게 값을 할당하기 위한 태그 
+         tpye= has a를 사용하는거
+         join되고잇는 친구를 has a를 사용하는 친구한테 줄려고-->
+    <resultMap type="com.ktdsuniversity.edu.board.vo.BoardVO" 
+               id="BoardVOMap"
+               autoMapping="true">
+          <!-- 쿼리에 사용되는 테이블의 PK값을 변수에 저장할 때 사용. 
+           id  column= pk  property= 변수 값-->
+          <id  column="ID" property="id"/>
+          <!-- 쿼리에 사용되는 테이블의 일반 컬럼의 값을 변수에 저장할 때 사용 -->
+          <!-- 
+          <result column="SUBJECT" property="subject"/>
+          <result column="CONTENT" property="content"/>
+          <result column="EMAIL" property="email"/>
+          <result column="VIEW_CNT" property="viewCnt"/>
+          <result column="CRT_DT" property="crtDt"/>
+          <result column="MDFY_DT" property="mdfyDt"/>
+          <result column="FILE_NAME" property="fileName"/>
+          <result column="ORIGIN_FILE_NAME" property="originFileName"/>
+           -->
+          <!-- BoardVO에 있는 list는 <collection> 태그 이용. -->
+          <!-- autoMapping="true"가 잇어야만 result는 생략이 가능 -->
+          <!--단일 VO에게 값을 할당하는 방법.
+              하나의 ResultMap에서 collection과 association이 동시에 사용될 때
+              collection이 가장 마지막에 위치해야한다는 규칙이있다.-->
+          <association property="membersVO"
+                       javaType="com.ktdsuniversity.edu.members.vo.MembersVO"
+                       autoMapping="true">
+                       <id column="EMAIL" property="email"/>
+          </association>
+          <collection property="files"
+                      javaType="list"
+                      ofType="com.ktdsuniversity.edu.files.vo.FilesVO"
+                      autoMapping="true">
+              <id column="FILE_NUM" property="fileNum"/>
+              <id column="FILE_GROUP_ID" property="fileGroupId"/>
+              <!-- 
+              <result column="OBFUSCATE_NAME" property="obfuscateName"/>
+              <result column="DISPLAY_NAME" property="displayName"/>
+              <result column="EXTEND_NAME" property="extendName"/>
+              <result column="FILE_LENGTH" property="fileLength"/>
+              <result column="FILE_PATH" property="filePath"/>
+               -->
+          </collection>
+
+    </resultMap>
+    <!-- resultType은 join이 없을때
+         resultMap은 join이 있을때 반드시 써야한다.
+         VO의 클레스 구조를 그대로 표현한다? -->
+    <select id="selectBoardById" 
+            resultMap="BoardVOMap" 
+            parameterType="string">
+            SELECT B.ID
+                 , B.SUBJECT
+                 , B.CONTENT
+                 , B.EMAIL
+                 , B.VIEW_CNT
+                 , TO_CHAR(B.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                 , TO_CHAR(B.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                 , B.FILE_NAME
+                 , B.ORIGIN_FILE_NAME
+                 , F.FILE_NUM
+                 , F.FILE_GROUP_ID
+                 , F.OBFUSCATE_NAME
+                 , F.DISPLAY_NAME
+                 , F.EXTEND_NAME
+                 , F.FILE_LENGTH
+                 , F.FILE_PATH
+                 , M.NAME
+                 , TO_CHAR(M.REGIST_DATE, 'YYYY-MM-DD HH24:MI:SS') AS REGIST_DATE
+              FROM BOARD B
+             INNER JOIN MEMBERS M
+                ON B.EMAIL = M.EMAIL
+              LEFT OUTER JOIN (SELECT F.FILE_NUM 
+                                    , FG.FILE_GROUP_ID 
+                                    , F.OBFUSCATE_NAME 
+                                    , F.DISPLAY_NAME 
+                                    , F.EXTEND_NAME 
+                                    , F.FILE_LENGTH 
+                                    , F.FILE_PATH 
+                                 FROM FILES_GROUP FG
+                                INNER JOIN FILES F
+                                   ON FG.FILE_GROUP_ID = F.FILE_GROUP_ID) F
+                ON B.FILE_GROUP_ID = F.FILE_GROUP_ID
+             WHERE B.ID = #{_parameter} 
+    </select>
+    <update id="updateViewCntIncreaseById" 
+            parameterType="string">
+            UPDATE BOARD
+               SET VIEW_CNT = VIEW_CNT + 1
+             WHERE ID = #{_parameter}
+    </update>
+    <delete id="deleteBoardById" parameterType="string">
+        DELETE FROM BOARD
+         WHERE ID= #{_parameter}
+    </delete>
+    
+    <update id="updateBoardById"
+            parameterType="com.ktdsuniversity.edu.board.vo.request.UpdateVO">
+            UPDATE BOARD
+               SET SUBJECT= #{subject}
+                 , CONTENT= #{content}
+                 , EMAIL= #{email}
+                 , MDFY_DT= SYSDATE<!-- 
+                 , FILE_GROUP_ID = #{fileGroupId} -->
+             WHERE ID= #{id}
+    </update>
+</mapper>

@@ -1,0 +1,98 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ktdsuniversity.edu.files.dao.FilesDao">
+    
+     <insert id="insertAttachFile"
+             parameterType="com.ktdsuniversity.edu.files.vo.request.UploadVO">
+             INSERT INTO SPRING_BOOT.FILES
+             (FILE_NUM
+             , FILE_GROUP_ID
+             , OBFUSCATE_NAME
+             , DISPLAY_NAME
+             , EXTEND_NAME
+             , FILE_LENGTH
+             , FILE_PATH)
+             VALUES(
+             (SELECT NVL(MAX(FILE_NUM), 0)+1
+                FROM SPRING_BOOT.FILES
+               WHERE FILE_GROUP_ID = #{fileGroupId})
+             , #{fileGroupId}
+             , #{obfuscateName}
+             , #{displayName}
+             , #{extendName}
+             , #{fileLength}
+             , #{filePath}
+             )
+         </insert>
+    <select id="downloadattachFile"
+            resultType="com.ktdsuniversity.edu.files.vo.response.DownloadVO"
+            parameterType="com.ktdsuniversity.edu.files.vo.request.SearchFileVO">
+            SELECT DISPLAY_NAME 
+                 , EXTEND_NAME
+                 , FILE_LENGTH 
+                 , FILE_PATH 
+              FROM FILES
+             WHERE FILE_GROUP_ID = #{fileGroupId}
+               AND FILE_NUM = #{fileNum}
+            </select>
+
+    <select id="selectFilePathByFileGroupIdAndFileNums" 
+            parameterType="com.ktdsuniversity.edu.files.vo.request.SearchFileGroupVO"
+            resultType="string">
+            SELECT FILE_PATH
+              FROM FILES
+             WHERE FILE_GROUP_ID = #{fileGroupId}
+               AND FILE_NUM IN 
+               <foreach collection="deleteFileNum" 
+                        item="fileNum" 
+                        open="(" 
+                        close=")" 
+                        separator=", ">
+                     #{fileNum}
+               </foreach>
+            </select>
+
+    <delete id="deleteFilesByFileGroupIdAndFileNums" 
+            parameterType="com.ktdsuniversity.edu.files.vo.request.SearchFileGroupVO">
+            DELETE 
+              FROM FILES
+             WHERE FILE_GROUP_ID = #{fileGroupId}
+               AND FILE_NUM IN 
+               <foreach collection="deleteFileNum" 
+                        item="fileNum" 
+                        open="(" 
+                        close=")" 
+                        separator=", ">
+                     #{fileNum}
+                </foreach>
+            </delete>
+            
+        <select id="selectFilePathByFileGroupId"
+                parameterType="string"
+                resultType="string">
+                SELECT FILE_PATH
+                  FROM FILES
+                 WHERE FILE_GROUP_ID = #{_parameter}
+        </select>
+        
+        <delete id ="deleteFilesByFileGroupId"
+                parameterType="string">
+                DELETE 
+                  FROM FILES
+                 WHERE FILE_GROUP_ID = #{_parameter}
+        </delete>
+        <select id="selectNewFileGroupId"
+                resultType="string">
+                SELECT 'FG-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILE_GROUP_ID_PK.NEXTVAL, 6, '0')
+                  FROM DUAL
+        </select>
+                
+        <insert id="insertFileGroupId"
+                parameterType="string">
+                INSERT INTO FILES_GROUP
+                (FILE_GROUP_ID)
+                VALUES(#{_parameter})
+                </insert>
+</mapper>

@@ -1,0 +1,28 @@
+#spring.application.name=hellow-spring
+#yml 파일의 규칙 스페이스바 2칸이면 다음거는 +2 해서 4개
+
+#콘솔 로그 레벨 변경
+#logging:
+#    level:
+#        root: debug
+
+#mybatis 연동 설정
+mybatis:
+    # mybatis 설정 파일 위치 지정
+    config-location: classpath:mybatis-config.xml
+    # mapper 파일들의 위치 지정
+    # **중간에 잇는거 생략
+    mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*Mapper.xml
+
+spring:
+    mvc:
+        view:
+            prefix: /WEB-INF/views/
+            suffix: .jsp
+    datasource:
+        url: jdbc:oracle:thin:@localhost:1521:XE
+        driver-class-name: oracle.jdbc.driver.OracleDriver
+        username: SPRING_BOOT
+        password: 1234
+    application:
+        name: hellow-spring

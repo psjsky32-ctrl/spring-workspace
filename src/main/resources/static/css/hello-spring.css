@@ -1,0 +1,401 @@
+@charset "UTF-8";
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #333;
+}
+
+div.wrapper {
+  width: 100%;
+  max-width: 87.5rem;
+  margin: 0 auto;
+}
+
+div.wrapper > div.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 0.625rem 0;
+}
+
+div.validation-error {
+  color: #f00;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  padding: 0.425rem;
+  background-color: #f002;
+}
+
+/* list style 시작 */
+ul.vertical-list {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+/* list style 끝 */
+
+/* link style 시작 */
+a {
+  color: #555;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff2d2d;
+  text-decoration: underline;
+}
+/* link style 끝 */
+
+pre {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ul grid 시작 */
+ul.grid {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  border: 1px solid #ddd;
+}
+
+ul.grid > li.header > ul.header-item,
+ul.grid > li.body > ul.body-item,
+ul.grid > li.footer > ul.footer-item {
+  display: grid;
+  margin: 0;
+  padding: 0.625rem;
+  list-style-type: none;
+}
+ul.grid > li.header > ul.header-item {
+  text-align: center;
+  font-weight: 700;
+}
+ul.grid > li.footer {
+  background-color: #f5f5f5;
+}
+ul.grid > li.body > ul.body-item:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+ul.grid > li.body > ul.body-item:hover {
+  background-color: #fafafa;
+}
+
+ul.grid > li.body > ul.body-item > li,
+ul.grid > li.header > ul.header-item > li {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 2rem;
+  padding: 0 0.625rem;
+}
+
+ul.grid li.center {
+  text-align: center;
+}
+/* ul grid 끝 */
+
+/* table grid 시작 */
+table.grid {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+table.grid > tbody > tr:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+
+table.grid > tbody > tr:hover {
+  background-color: #fafafa;
+}
+
+table.grid > thead > tr {
+  background-color: #fff;
+}
+
+table.grid > thead > tr > th {
+  padding: 0.625rem;
+}
+
+table.grid > thead > tr > th,
+table.grid > tbody > tr > td {
+  border-right: none;
+  padding: 0.625rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+table.grid > tbody > tr > td > a {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* table grid 끝 */
+
+/* grid style 시작 */
+div.grid {
+  display: grid;
+}
+
+div.grid > div.btn-group {
+  grid-column: 1 / -1;
+}
+
+div.grid > div.btn-group a {
+  display: inline-block;
+  padding: 0.4rem 0.625rem;
+  color: #555;
+  text-decoration: none;
+}
+
+div.grid > div.btn-group a:hover {
+  color: #ff2d2d;
+  text-decoration: underline;
+}
+
+div.grid > div.btn-group > div.right-align {
+  text-align: right;
+}
+
+div.grid > label {
+  padding-left: 0.625rem;
+}
+
+div.grid input,
+div.grid button,
+div.grid textarea {
+  padding: 0.625rem;
+}
+/* grid style 끝 */
+
+/* 글 목록 style 시작 */
+ul.articles > li.body > ul.body-item,
+ul.articles > li.header > ul.header-item {
+  grid-template-columns: 11.5rem 1fr minmax(10rem, auto) 4.5rem 11rem 11rem;
+}
+/* 글 목록 style 끝 */
+
+/* 글쓰기 style 시작 */
+div.update {
+  grid-template-columns: 5rem 1fr;
+  grid-template-rows: 1.75rem 1.75rem minmax(1.75rem, auto) 20rem 1fr;
+  row-gap: 0.625rem;
+}
+
+div.write {
+  grid-template-columns: 5rem 1fr;
+  grid-template-rows: repeat(3, minmax(1.75rem, auto)) 20rem 1fr;
+  row-gap: 0.625rem;
+}
+
+div.regist > div.input-div > input,
+div.write > div.input-div > input,
+div.login > div.input-div > input {
+  width: 100%;
+  display: block;
+}
+
+div.write > div.attach-files,
+div.update > div.attach-files {
+  display: grid;
+  grid-template-columns: 1fr minmax(80px, auto);
+  gap: 0.625rem;
+}
+
+div.update > div.attach-files > ul.vertical-list {
+  grid-column: 1 / -1;
+}
+
+div.update
+  > div.attach-files
+  > ul.vertical-list
+  > li
+  > input[type="checkbox"]:checked
+  + a {
+  color: #f00;
+  text-decoration: line-through;
+}
+/* 글쓰기 style 끝 */
+
+/* 게시글 내용 조회 style 시작 */
+div.view {
+  grid-template-columns: 7.5rem 1fr;
+  grid-template-rows: repeat(9, minmax(1.75rem, auto));
+  row-gap: 0.625rem;
+}
+/* 게시글 내용 조회 style 끝 */
+
+/* 회원가입 style 시작 */
+div.regist {
+  grid-template-columns: 7.5rem 1fr;
+  grid-template-rows: repeat(4, minmax(1.75rem, auto)) 1fr;
+  row-gap: 0.625rem;
+  align-items: center;
+}
+
+div.member-update {
+  grid-template-columns: 7.5rem 1fr;
+  grid-template-rows: repeat(4, minmax(1.75rem, auto)) 1fr;
+  row-gap: 0.625rem;
+  align-items: center;
+}
+div.member-view {
+  grid-template-columns: 7.5rem 1fr;
+  grid-template-rows: repeat(4, minmax(1.75rem, auto)) 1fr;
+  row-gap: 0.625rem;
+  align-items: center;
+}
+/* 회원가입 style 끝 */
+
+/* 회원 목록 style 시작 */
+ul.member-list > li.body > ul.body-item,
+ul.member-list > li.header > ul.header-item {
+  grid-template-columns: repeat(3, 1fr);
+}
+/* 회원 목록 style 끝 */
+
+/* 회원 목록 style 시작 */
+div.login {
+  grid-template-columns: 7.5rem 1fr;
+  grid-template-rows: repeat(2, minmax(1.75rem, auto)) 1fr;
+  row-gap: 0.625rem;
+}
+/* 회원 목록 style 끝 */
+
+/* 댓글 style 시작 */
+.replies-count,
+.replies,
+.reply-form {
+  grid-column: 1 / -1;
+}
+
+.replies {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  gap: 0.625rem;
+}
+
+.replies > li {
+  padding: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+
+  border-bottom: 1px solid #aaa;
+}
+
+.replies > li:nth-child(odd) {
+  background-color: #f3f3f3;
+}
+
+.replies > li > .reply-attach-files {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.replies > li > .links {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.replies > li > .links > span {
+  display: inline-block;
+  padding: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.replies > li > .links > span:hover {
+  color: #fff;
+  background-color: #0003;
+  border-radius: 0.5rem;
+}
+
+.update-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.update-form > .update-button-area {
+  align-self: flex-end;
+  display: inline-flex;
+  gap: 0.625rem;
+}
+
+.update-form > .update-file-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.update-form > .update-file-list > div > input {
+  display: none;
+}
+
+.update-form > .update-file-list > div > input + label {
+  cursor: not-allowed;
+}
+
+.update-form > .update-file-list > div > input:checked + label {
+  color: #f00;
+  text-decoration: line-through;
+  cursor: pointer;
+}
+
+.reply-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.reply-form > .parent-reply-id {
+  align-self: flex-start;
+  width: auto;
+  border: 0;
+  outline: 0;
+}
+
+.reply-form > .reply-content {
+  height: 10rem;
+}
+
+.reply-form > .reply-save {
+  align-self: flex-end;
+}
+
+/* 댓글 style 끝 */
+
+/* page-navigator */
+ul.page-navigator {
+  display: flex;
+  flex-direction: row;
+  gap: 0.625rem;
+  justify-content: center;
+  margin: 0.625rem 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+ul.page-navigator > li.active > a {
+  color: #f00;
+}

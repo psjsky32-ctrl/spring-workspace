@@ -1,0 +1,142 @@
+ <!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.replies.dao.RepliesDao">
+
+
+	<insert id="insertNewReply"
+		parameterType="com.ktdsuniversity.edu.replies.vo.request.CreateVO">
+		<selectKey order="BEFORE"
+                   resultType="string"
+                   keyProperty="id">
+		SELECT 'RP-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_REPLIES_PK.NEXTVAL, 6, '0')
+		FROM DUAL
+		</selectKey>
+		INSERT INTO REPLIES
+		(ID
+		, REPLY
+		, RECOMMEND_CNT
+		, CRT_DT
+		, MDFY_DT
+		, EMAIL
+		, ARTICLE_ID
+		, PARENT_REPLY_ID
+		, FILE_GROUP_ID)
+		VALUES
+		(#{id}
+		, #{reply}
+		, 0
+		,
+		SYSDATE
+		, NULL
+		, #{email}
+		, #{articleId}
+		, #{parentReplyId}
+		, #{fileGroupId}
+		)
+	</insert>
+
+    <resultMap type="com.ktdsuniversity.edu.replies.vo.RepliesVO"
+               id="RepliesVOMap"
+               autoMapping="true">
+            <id column = "ID" property="id" />
+            <association property="membersVO"
+                         javaType="com.ktdsuniversity.edu.members.vo.MembersVO"
+                         autoMapping="true">
+           <id column ="EMAIL" property="email"/>
+           </association>
+           <collection property="files"
+                       javaType="list"
+                       ofType="com.ktdsuniversity.edu.files.vo.FilesVO"
+                       autoMapping="true">
+                        <id column ="FILE_NUM" property="fileNum" />
+                        <id column ="FILE_GROUP_ID" property="fileGroupId"/>
+           </collection>
+    </resultMap>
+
+	<select id="selectReplyByReplyId" 
+	    parameterType="string"
+		resultMap="RepliesVOMap">
+		SELECT R.ID
+		     , R.REPLY
+		     , R.RECOMMEND_CNT
+		     , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+		     , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+		     , R.EMAIL
+		     , R.ARTICLE_ID
+		     , R.PARENT_REPLY_ID
+		     , R.FILE_GROUP_ID
+		     , M.NAME
+		  FROM REPLIES R
+		 INNER JOIN MEMBERS M
+		    ON R.EMAIL = M.EMAIL
+		 WHERE R.ID = #{_parameter}
+	</select>
+
+    <select id="selectRepliesCountByArticleId"
+            parameterType="string"
+            resultType="_int">
+            SELECT COUNT(R.ID)
+              FROM REPLIES R
+             INNER JOIN MEMBERS M
+                ON R.EMAIL = M.EMAIL
+             WHERE R.ARTICLE_ID = #{_parameter}
+    </select>
+            
+    <select id="selectRepliesByArticleId"
+            parameterType="string"
+            resultMap="RepliesVOMap">
+             SELECT LEVEL
+                  , R.ID
+                  , R.REPLY
+                  , R.RECOMMEND_CNT
+                  , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                  , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                  , R.EMAIL
+                  , R.ARTICLE_ID
+                  , R.PARENT_REPLY_ID
+                  , R.FILE_GROUP_ID
+                  , M.NAME
+                  , F.FILE_NUM 
+                  , F.DISPLAY_NAME 
+                  , F.FILE_LENGTH 
+               FROM REPLIES R
+              INNER JOIN MEMBERS M
+                 ON R.EMAIL = M.EMAIL
+               LEFT OUTER JOIN (SELECT F.FILE_NUM 
+                                     , F.DISPLAY_NAME 
+                                     , F.FILE_LENGTH 
+                                     , FG.FILE_GROUP_ID 
+                                  FROM FILES_GROUP FG
+                                 INNER JOIN FILES F
+                                    ON FG.FILE_GROUP_ID = F.FILE_GROUP_ID) F
+                 ON R.FILE_GROUP_ID = F.FILE_GROUP_ID 
+              WHERE R.ARTICLE_ID  = #{_parameter}
+              START WITH R.PARENT_REPLY_ID IS NULL
+            CONNECT BY PRIOR R.ID = R.PARENT_REPLY_ID
+    </select>
+
+    <delete id="deleteReplyById"
+            parameterType="string">
+            DELETE 
+              FROM SPRING_BOOT.REPLIES
+             WHERE ID= #{_parameter}
+    </delete>
+    
+    <update id="updateRecommendCnt"
+            parameterType="string">
+            UPDATE REPLIES
+               SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+             WHERE ID = #{_parameter}
+    </update>
+    
+    
+    <update id="updateReplyByReplyId"
+            parameterType="com.ktdsuniversity.edu.replies.vo.request.UpdateVO">
+         UPDATE REPLIES
+            SET REPLY = #{content}
+              , FILE_GROUP_ID = #{fileGroupId}
+              , MDFY_DT = SYSDATE
+          WHERE ID = #{replyId}
+    </update>
+</mapper>
